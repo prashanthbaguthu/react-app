@@ -1,0 +1,21 @@
+.k-grid-container {
+  background-color: #f8f9fa; /* Light grey background for grid */
+}
+
+.k-grid-header {
+  background-color: #007bff; /* Blue header */
+  color: white;
+  font-weight: 600;
+}
+
+.k-grid td {
+  background-color: #ffffff; /* White row background */
+}
+
+.k-grid tr.k-alt {
+  background-color: #f1f3f5; /* Alternate row color */
+}
+
+.k-grid .k-pager-wrap {
+  background-color: #f8f9fa; /* Pager background */
+}

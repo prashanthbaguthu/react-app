@@ -1,0 +1,169 @@
+.top-navbar {
+  position: fixed;
+  top: 0;
+  height: 60px;
+  background: #0d6efd;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 3000;
+}
+
+/* Logo */
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Center Links */
+.navbar-center {
+  display: flex;
+  gap: 25px;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  padding-bottom: 4px;
+}
+
+.nav-link:hover {
+  border-bottom: 2px solid white;
+}
+
+/* Right Icons */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.icon {
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.icon:hover {
+  transform: scale(1.2);
+}
+
+/* Search */
+.search-container {
+  position: relative;
+}
+
+.search-container input {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid gray;
+  outline: none;
+  font-size: 14px;
+  width: 180px;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  width: 100%;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  z-index: 4000;
+}
+
+.dropdown-item {
+  padding: 10px;
+  cursor: pointer;
+  color: black;
+}
+
+.dropdown-item:hover {
+  background-color: #f2f2f2;
+}
+
+.no-result {
+  color: red;
+}
+
+/* Profile */
+.profile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  cursor: pointer;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.profile-icon {
+  font-size: 28px;
+}
+
+/* Profile Card (hidden by default) */
+.profile-card {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 200px;
+  background: #fff;
+  color: #000;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.2s ease-in-out;
+  text-align: center;
+  z-index: 5000;
+}
+
+/* Show card on hover */
+.profile:hover .profile-card {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.card-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.card-icon {
+  font-size: 28px;
+}
+
+.profile-card button {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  background-color: #dc3545;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.profile-card button:hover {
+  background-color: #b02a37;
+}
+.profile-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
