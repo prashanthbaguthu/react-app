@@ -15,7 +15,7 @@ function SoftwareCourseDetails() {
   }, [id]);
 
   if (!course)
-    return <div className="text-danger text-center mt-5 display-6">Course not found</div>;
+    return <div className="text-danger text-center mt-5 display-6">Course not founds</div>;
 
   return (
     <div className="container my-5">
