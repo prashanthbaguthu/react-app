@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAllCourses, deleteCourse } from "../services/softwareCourseService";
 import Swal from "sweetalert2";
+import jsPDF from "jspdf";
 
 function SoftwareCourseList() {
   const navigate = useNavigate();
@@ -59,6 +60,23 @@ function SoftwareCourseList() {
     }
   };
 
+  // Function to print PDF
+  const handlePrintPdf = (course) => {
+    debugger;
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Course Details", 20, 20);
+
+    doc.setFontSize(12);
+    doc.text(`ID: ${course.CourseId}`, 20, 40);
+    doc.text(`Name: ${course.CourseName}`, 20, 50);
+    doc.text(`Duration: ${course.Duration}`, 20, 60);
+    doc.text(`Fees: ${course.Fees}`, 20, 70);
+    doc.text(`Description: ${course.Description}`, 20, 80);
+
+    doc.save(`Course_${course.CourseId}.pdf`);
+  };
+
   const filteredCourses = courses.filter((c) =>
     c.CourseName?.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -101,7 +119,18 @@ function SoftwareCourseList() {
               </td>
               <td>
                 <button className="btn btn-warning btn-sm me-2">Edit</button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(c.CourseId)}>Delete</button>
+                <button
+                  className="btn btn-danger btn-sm me-2"
+                  onClick={() => handleDelete(c.CourseId)}
+                >
+                  Delete
+                </button>
+                <button
+                  className="btn btn-success btn-sm"
+                  onClick={() => handlePrintPdf(c)}
+                >
+                  Print PDF
+                </button>
               </td>
             </tr>
           ))}
