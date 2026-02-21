@@ -1,3 +1,5 @@
+// File Name: SoftwareCourseList.jsx
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAllCourses, deleteCourse } from "../services/softwareCourseService";
@@ -6,33 +8,40 @@ import jsPDF from "jspdf";
 
 function SoftwareCourseList() {
   const navigate = useNavigate();
-  const [courses, setCourses] = useState([]);
+
+  // Columns you want to hide
+  const hiddenColumns = ["Message", "Status"];
+
+  // Dynamic Columns & Rows State
+  const [columns, setColumns] = useState([]);
+  const [rows, setRows] = useState([]);
+
+  // Search State
   const [searchText, setSearchText] = useState("");
 
+  // ===================================================
+  // Load Courses from Backend API
+  // ===================================================
   useEffect(() => {
-    let mounted = true;
     const loadCourses = async () => {
       try {
         const response = await getAllCourses();
-        const data =
-          response.data?.Rows?.length > 0
-            ? response.data.Rows.map((row) => {
-                const obj = {};
-                response.data.Columns.forEach((col, index) => {
-                  obj[col.ColumnName] = row[index];
-                });
-                return obj;
-              })
-            : response.data;
-        if (mounted) setCourses(data);
+
+        if (response.data?.columns && response.data?.rows) {
+          setColumns(response.data.columns);
+          setRows(response.data.rows);
+        }
       } catch (error) {
-        console.error(error);
+        console.error("Error loading courses:", error);
       }
     };
+
     loadCourses();
-    return () => (mounted = false);
   }, []);
 
+  // ===================================================
+  // Delete Course Function
+  // ===================================================
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -40,50 +49,57 @@ function SoftwareCourseList() {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, Delete it!",
-      cancelButtonText: "Cancel",
     });
 
     if (!result.isConfirmed) return;
 
     try {
-      const Res = await deleteCourse(id);
-      Swal.fire({
-        title: "Deleted!",
-        text: Res.data.message,
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-      setCourses((prev) => prev.filter((c) => c.CourseId !== id));
-    } catch (error) {
-      Swal.fire({ title: "Failed!", text: "Delete failed.", icon: "error" });
+      await deleteCourse(id);
+
+      Swal.fire("Deleted!", "Course deleted successfully.", "success");
+
+      // Remove deleted row from UI
+      setRows((prev) => prev.filter((r) => r[0] !== id));
+    } catch {
+      Swal.fire("Failed!", "Delete failed.", "error");
     }
   };
 
-  // Function to print PDF
-  const handlePrintPdf = (course) => {
-    debugger;
+  // ===================================================
+  // Print PDF Function
+  // ===================================================
+  const handlePrintPdf = (row) => {
     const doc = new jsPDF();
-    doc.setFontSize(16);
     doc.text("Course Details", 20, 20);
 
-    doc.setFontSize(12);
-    doc.text(`ID: ${course.CourseId}`, 20, 40);
-    doc.text(`Name: ${course.CourseName}`, 20, 50);
-    doc.text(`Duration: ${course.Duration}`, 20, 60);
-    doc.text(`Fees: ${course.Fees}`, 20, 70);
-    doc.text(`Description: ${course.Description}`, 20, 80);
+    columns.forEach((col, index) => {
+      if (!hiddenColumns.includes(col.columnName)) {
+        doc.text(`${col.columnName}: ${row[index]}`, 20, 40 + index * 10);
+      }
+    });
 
-    doc.save(`Course_${course.CourseId}.pdf`);
+    doc.save("Course_Details.pdf");
   };
 
-  const filteredCourses = courses.filter((c) =>
-    c.CourseName?.toLowerCase().includes(searchText.toLowerCase())
+  // ===================================================
+  // Search Filter
+  // ===================================================
+  const filteredRows = rows.filter((row) =>
+    row.some((value) =>
+      value?.toString().toLowerCase().includes(searchText.toLowerCase())
+    )
+  );
+
+  // Visible columns only
+  const visibleColumns = columns.filter(
+    (col) => !hiddenColumns.includes(col.columnName)
   );
 
   return (
-    <div className="container mt-4">
-      <h2 className="text-primary mb-3">📘 Software Courses Master</h2>
+    <div className="container mt-4 user-select-none">
+      <h2 className="text-primary mb-3 user-select-none">📘 Software Courses Master</h2>
+
+      {/* Search Box */}
       <input
         type="text"
         className="form-control mb-3"
@@ -91,51 +107,104 @@ function SoftwareCourseList() {
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
       />
-      <table className="table table-bordered text-center">
-        <thead className="table-dark">
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Duration</th>
-            <th>Fees</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredCourses.map((c) => (
-            <tr key={c.CourseId}>
-              <td>{c.CourseId}</td>
-              <td>{c.CourseName}</td>
-              <td>{c.Duration}</td>
-              <td>{c.Fees}</td>
-              <td>
-                <span
-                  style={{ color: "blue", cursor: "pointer", textDecoration: "underline" }}
-                  onClick={() => navigate(`/software-course/${c.CourseId}`)}
-                >
-                  {c.Description}
-                </span>
-              </td>
-              <td>
-                <button className="btn btn-warning btn-sm me-2">Edit</button>
-                <button
-                  className="btn btn-danger btn-sm me-2"
-                  onClick={() => handleDelete(c.CourseId)}
-                >
-                  Delete
-                </button>
-                <button
-                  className="btn btn-success btn-sm"
-                  onClick={() => handlePrintPdf(c)}
-                >
-                  Print PDF
-                </button>
-              </td>
+
+      {/* Scroll Container */}
+      <div
+        style={{
+          maxHeight: "400px",
+          overflowY: "auto",
+          overflowX: "auto",
+          border: "1px solid #ddd",
+        }}
+      >
+        {/* Table */}
+        <table
+          className="table table-bordered text-center mb-0 user-select-none"
+          style={{
+            minWidth: `${visibleColumns.length * 180}px`,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {/* Sticky Header */}
+          <thead
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 10,
+              backgroundColor: "#212229",
+              color: "white",
+            }}
+          >
+            <tr>
+              {visibleColumns.map((col) => (
+                <th key={col.columnName}>{col.columnName}</th>
+              ))}
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          {/* Body */}
+          <tbody>
+            {filteredRows.length > 0 ? (
+              filteredRows.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {row.map((cell, cellIndex) => {
+                    const colName = columns[cellIndex]?.columnName;
+
+                    // Skip hidden columns
+                    if (hiddenColumns.includes(colName)) return null;
+
+                    return (
+                      <td key={cellIndex}>
+                        {/* Clickable Description Link */}
+                        {colName === "Description" ? (
+                          <span
+                            className="text-primary fw-bold"
+                            style={{
+                              cursor: "pointer",
+                              textDecoration: "underline",
+                            }}
+                            onClick={() =>
+                              navigate(`/software-course/${row[0]}`)
+                            }
+                          >
+                            {cell}
+                          </span>
+                        ) : (
+                          cell
+                        )}
+                      </td>
+                    );
+                  })}
+
+                  {/* Actions */}
+                  <td>
+                    <button
+                      className="btn btn-danger btn-sm me-2"
+                      onClick={() => handleDelete(row[0])}
+                    >
+                      Delete
+                    </button>
+
+                    <button
+                      className="btn btn-success btn-sm"
+                      onClick={() => handlePrintPdf(row)}
+                    >
+                      Print PDF
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={visibleColumns.length + 1}>
+                  <strong>No Courses Found</strong>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
